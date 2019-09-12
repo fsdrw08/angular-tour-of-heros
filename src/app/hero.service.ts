@@ -11,6 +11,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class HeroService {
   private heroesUrl = 'api/heroes';  // URL to web api
   
+  httpOptions = {
+    headers: new HttpHeaders({'Content-Type':'application/json'})
+  };
+
   /**
   * Handle Http operation that failed.
   * Let the app continue.
@@ -33,22 +37,31 @@ export class HeroService {
   getHeroes(): Observable<Hero[]> {
     return this.http.get<Hero[]>(this.heroesUrl)
       .pipe(
+        tap(_ => this.log('fetched heroes')),
         catchError(this.handleError<Hero[]>('getHeroes',[]))
       );
   }
-/*
+
   getHero(id: number): Observable<Hero> {
-    return this.http.get<Hero[]>()
-    //of (HEROES.find(hero => hero.id === id));
+    const url = `${this.heroesUrl}/${id}`;
+    return this.http.get<Hero>(url).pipe(
+      tap(_ => this.log(`fetched hero id=${id}`)),
+      catchError(this.handleError<Hero>(`get hero id=${id}`))
+    );
   }
-*/  
+
+  updateHero(hero: Hero): Observable<any> {
+    return this.http.put(this.heroesUrl, hero, this.httpOptions).pipe(
+      tap(_ =>this.log(`update hero id=${hero.id}`)),
+      catchError(this.handleError<any>(`updateHero`))
+    )
+  }
+  
   private log(message: string) {
     this.messageService.add(`Heroservices: ${message}`)
   }
 
-  
-
-  constructor(
+    constructor(
     private http: HttpClient,
     private messageService : MessageService) { }
 }
